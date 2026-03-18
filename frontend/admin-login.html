@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <h1>Admin Login</h1>
+            <p class="subtitle">Login to manage form responses</p>
+
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter admin username" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter admin password" required />
+                </div>
+
+                <button type="submit" class="primary-btn">LOGIN</button>
+            </form>
+
+            <div id="messageBox" class="message-box"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8081";
+        const form = document.getElementById("adminLoginForm");
+        const messageBox = document.getElementById("messageBox");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const data = {
+                username: document.getElementById("username").value.trim(),
+                password: document.getElementById("password").value.trim()
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    localStorage.setItem("adminLoggedIn", "true");
+                    window.location.href = "admin-dashboard.html";
+                } else {
+                    showMessage(result.message, "error");
+                }
+            } catch (error) {
+                showMessage("Login failed", "error");
+            }
+        });
+
+        function showMessage(message, type) {
+            messageBox.style.display = "block";
+            messageBox.textContent = message;
+            messageBox.className = "message-box";
+
+            if (type === "success") {
+                messageBox.classList.add("message-success");
+            } else {
+                messageBox.classList.add("message-error");
+            }
+        }
+    </script>
+</body>
+</html>
