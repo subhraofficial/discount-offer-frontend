@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Special Offer</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="form-card" style="text-align: center;">
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="font-size:14px; color:#6b7280;">Powered by</div>
+                <div style="font-size:24px; font-weight:bold; color:#4f46e5;">Som's Classroom</div>
+            </div>
+            <h1>Congratulations 🎉</h1>
+            <p class="subtitle" id="offerMessage">Your discount is ready</p>
+
+            <h2 id="discountText" style="margin: 20px 0; color: #4f46e5;"></h2>
+
+            <div style="margin: 20px 0;">
+                <p style="font-size: 18px; margin-bottom: 10px;">Your Code:</p>
+                <div id="couponCode"
+                     style="font-size: 28px; font-weight: bold; color: #c2410c; background: #fff7ed; padding: 15px; border-radius: 12px;">
+                </div>
+            </div>
+
+            <button id="copyBtn" class="primary-btn">COPY CODE</button>
+            <button onclick="window.location.href='index.html'" class="share-btn">BACK TO FORM</button>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const discount = params.get("discount");
+        const couponCode = params.get("couponCode");
+        const message = params.get("message");
+
+        document.getElementById("discountText").textContent = `You unlocked ${discount}% OFF`;
+        document.getElementById("couponCode").textContent = couponCode;
+        document.getElementById("offerMessage").textContent = message || "Your discount is ready";
+
+        document.getElementById("copyBtn").addEventListener("click", async function () {
+            try {
+                await navigator.clipboard.writeText(couponCode);
+                alert("Coupon code copied!");
+            } catch (error) {
+                alert("Failed to copy code.");
+            }
+        });
+    </script>
+</body>
+</html>
