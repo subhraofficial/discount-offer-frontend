@@ -64,10 +64,11 @@ form.addEventListener("submit", async function (e) {
         localStorage.setItem("formSubmitted", "true");
 
         if (result.status === "PURCHASED") {
-            window.location.href = `thank-you.html?message=${encodeURIComponent(result.message)}`;
+            window.location.href =
+        `thank-you.html?discount=${result.discount}&couponCode=${encodeURIComponent(result.couponCode)}&message=${encodeURIComponent(result.message)}`;
         } else {
             window.location.href =
-                `offer.html?discount=${result.discount}&couponCode=${encodeURIComponent(result.couponCode)}&message=${encodeURIComponent(result.message)}`;
+               `offer.html?discount=${result.discount}&couponCode=${encodeURIComponent(result.couponCode)}&message=${encodeURIComponent(result.message)}`;
         }
     } catch (error) {
         showMessage("Something went wrong. Please try again.", "error");

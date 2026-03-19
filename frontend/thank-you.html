@@ -13,20 +13,62 @@
                 <div style="font-size:14px; color:#6b7280;">Powered by</div>
                 <div style="font-size:24px; font-weight:bold; color:#4f46e5;">Som's Classroom</div>
             </div>
-            <h1>Thank You 🎉</h1>
-            <p class="subtitle" id="thankMessage">Your purchase is already confirmed.</p>
 
-            <button onclick="window.location.href='index.html'" class="primary-btn">GO BACK</button>
+            <h1>অভিনন্দন 🎉</h1>
+            <p class="subtitle" id="thankMessage">If you already purchase, you can share this code to your friend</p>
+
+            <h2 id="discountText" style="margin: 20px 0; color: #4f46e5;"></h2>
+
+            <div style="margin: 20px 0;">
+                <p style="font-size: 18px; margin-bottom: 10px;">Share Coupon Code</p>
+                <div id="couponCode"
+                     style="font-size: 28px; font-weight: bold; color: #c2410c; background: #fff7ed; padding: 15px; border-radius: 12px;">
+                </div>
+            </div>
+
+            <button id="copyBtn" class="primary-btn">COPY CODE</button>
+            <button id="shareBtn" class="share-btn">SHARE WITH FRIEND</button>
         </div>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
+        const discount = params.get("discount");
+        const couponCode = params.get("couponCode");
         const message = params.get("message");
 
-        if (message) {
-            document.getElementById("thankMessage").textContent = message;
-        }
+        document.getElementById("discountText").textContent = `তোমার বন্ধুর জন্য ₹${discount} OFF`;
+        document.getElementById("couponCode").textContent = couponCode;
+        document.getElementById("thankMessage").textContent =
+            message || "If you already purchase, you can share this code to your friend";
+
+        document.getElementById("copyBtn").addEventListener("click", async function () {
+            try {
+                await navigator.clipboard.writeText(couponCode);
+                alert("Coupon code copied!");
+            } catch (error) {
+                alert("Failed to copy code.");
+            }
+        });
+
+        document.getElementById("shareBtn").addEventListener("click", async function () {
+            const shareText = `I already purchased from Som's Classroom. You can use this coupon code: ${couponCode} and get ₹${discount} OFF. Visit: https://somsclassroomoffer.netlify.app/`;
+
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: "Som's Classroom Offer",
+                        text: shareText,
+                        url: "https://somsclassroomoffer.netlify.app/"
+                    });
+                } else {
+                    await navigator.clipboard.writeText(shareText);
+                    alert("Share text copied!");
+                }
+            } catch (error) {
+                alert("Share cancelled or failed.");
+            }
+        });
     </script>
 </body>
 </html>
