@@ -56,6 +56,11 @@ form.addEventListener("submit", async function (e) {
             return;
         }
 
+        if (result.status === "NO_COUPON_AVAILABLE") {
+            showMessage(result.message, "error");
+            return;
+        }
+
         localStorage.setItem("formSubmitted", "true");
 
         if (result.status === "PURCHASED") {

@@ -13,8 +13,8 @@
                 <div style="font-size:14px; color:#6b7280;">Powered by</div>
                 <div style="font-size:24px; font-weight:bold; color:#4f46e5;">Som's Classroom</div>
             </div>
-            <h1>Congratulations 🎉</h1>
-            <p class="subtitle" id="offerMessage">Your discount is ready</p>
+            <h1>Congratulations 🎉Your discount is ready</h1>
+            <p class="subtitle" id="offerMessage">Coupon Code শুধুমাত্র Combo Course এর জন্য Valid</p>
 
             <h2 id="discountText" style="margin: 20px 0; color: #4f46e5;"></h2>
 
@@ -36,9 +36,9 @@
         const couponCode = params.get("couponCode");
         const message = params.get("message");
 
-        document.getElementById("discountText").textContent = `You unlocked ${discount}% OFF`;
+        document.getElementById("discountText").textContent = `You unlocked ₹${discount} OFF`;
         document.getElementById("couponCode").textContent = couponCode;
-        document.getElementById("offerMessage").textContent = message || "Your discount is ready";
+        document.getElementById("offerMessage").textContent = message || "Coupon Code শুধুমাত্র Combo Course এর জন্য Valid";
 
         document.getElementById("copyBtn").addEventListener("click", async function () {
             try {

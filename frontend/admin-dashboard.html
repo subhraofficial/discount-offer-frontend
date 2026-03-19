@@ -82,28 +82,16 @@
     <h2>Add Coupon Offer</h2>
 
     <div class="filter-row" style="grid-template-columns: 1fr 1fr auto;">
-        <select id="adminDiscount" title="Select Discount">
-            <option value="">Select Discount</option>
-            <option value="51">51%</option>
-            <option value="52">52%</option>
-            <option value="53">53%</option>
-            <option value="54">54%</option>
-            <option value="55">55%</option>
-            <option value="56">56%</option>
-            <option value="57">57%</option>
-            <option value="58">58%</option>
-            <option value="59">59%</option>
-            <option value="60">60%</option>
-            <option value="61">61%</option>
-            <option value="62">62%</option>
-            <option value="63">63%</option>
-            <option value="64">64%</option>
-            <option value="65">65%</option>
-            <option value="66">66%</option>
-            <option value="67">67%</option>
-            <option value="68">68%</option>
-            <option value="69">69%</option>
-            <option value="70">70%</option>
+        <select id="adminDiscount" title="Select Flat Discount Amount">
+            <option value="">Select Flat Discount Amount</option>
+            <option value="50">₹50 OFF</option>
+            <option value="100">₹100 OFF</option>
+            <option value="150">₹150 OFF</option>
+            <option value="200">₹200 OFF</option>
+            <option value="250">₹250 OFF</option>
+            <option value="300">₹300 OFF</option>
+            <option value="350">₹350 OFF</option>
+            <option value="400">₹400 OFF</option>
         </select>
 
         <input type="text" id="adminCouponCode" placeholder="Enter Coupon Code" />
@@ -225,7 +213,7 @@ async function loadCouponOffers() {
         body.innerHTML += `
             <tr>
                 <td>${item.id}</td>
-                <td>${item.discountPercentage}%</td>
+                <td>₹${item.discountPercentage} OFF</td>
                 <td>${item.couponCode}</td>
                 <td>
                     <button onclick="editCoupon(${item.id}, ${item.discountPercentage}, '${item.couponCode}')">Edit</button>
