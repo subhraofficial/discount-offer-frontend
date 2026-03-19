@@ -76,7 +76,7 @@ form.addEventListener("submit", async function (e) {
 });
 
 shareBtn.addEventListener("click", async function () {
-    const shareText = "I found this amazing offer. Fill the form and get your discount code now!";
+    const shareText = "ঈদের জন্য তোমাদের উপহার Som's Classroom এর পক্ষ থেকে 🎁";
     const shareUrl = window.location.href;
     const fullText = `${shareText} ${shareUrl}`;
 
