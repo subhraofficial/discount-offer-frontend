@@ -131,6 +131,17 @@
 
     <div id="offerMessage" class="message-box"></div>
 
+    <div style="margin-top: 20px; margin-bottom: 20px; padding: 16px; background: #f3f4f6; border-radius: 12px;">
+        <h3 style="margin-bottom: 10px;">Upload Coupon CSV</h3>
+
+        <input type="file" id="csvFileInput" accept=".csv" title="Select a CSV file to upload coupon codes" />
+        <button type="button" class="small-btn export-btn" onclick="uploadCouponCsv()">Upload CSV</button>
+
+        <p style="margin-top:10px; font-size:14px; color:#555;">
+            CSV format should contain one column: <b>coupon_code</b>
+        </p>
+    </div>
+
     <!-- Coupon Table -->
     <h3>Coupon List</h3>
     <table>
@@ -144,6 +155,24 @@
         </thead>
         <tbody id="couponTableBody"></tbody>
     </table>
+
+    <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div>
+            <label for="couponPageSize">Show</label>
+            <select id="couponPageSize" onchange="changeCouponPageSize()">
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span>entries</span>
+        </div>
+    
+        <div>
+            <button type="button" class="small-btn" onclick="prevCouponPage()">Previous</button>
+            <span id="couponPageInfo" style="margin: 0 10px;">Page 1</span>
+            <button type="button" class="small-btn" onclick="nextCouponPage()">Next</button>
+        </div>
+    </div>
 </div>
 
 <!-- ================= FILTER SECTION ================= -->
@@ -180,6 +209,24 @@
     <tbody id="tableBody"></tbody>
 </table>
 
+<div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <div>
+        <label for="formPageSize">Show</label>
+        <select id="formPageSize" onchange="changeFormPageSize()">
+            <option value="10">10</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+        <span>entries</span>
+    </div>
+
+    <div>
+        <button type="button" class="small-btn" onclick="prevFormPage()">Previous</button>
+        <span id="formPageInfo" style="margin: 0 10px;">Page 1</span>
+        <button type="button" class="small-btn" onclick="nextFormPage()">Next</button>
+    </div>
+</div>
+
 </div>
 </div>
 
@@ -187,6 +234,14 @@
 
 const API_BASE_URL = "https://discount-offer-app.onrender.com";
 let editingCouponId = null;
+
+let allCoupons = [];
+let couponCurrentPage = 1;
+let couponPageSize = 10;
+
+let allForms = [];
+let formCurrentPage = 1;
+let formPageSize = 10;
 
 // check login
 if (localStorage.getItem("adminLoggedIn") !== "true") {
@@ -232,26 +287,70 @@ async function saveCouponOffer() {
 }
 
 async function loadCouponOffers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/coupon-offers`);
+        const data = await response.json();
 
-    const res = await fetch(`${API_BASE_URL}/api/admin/coupon-offers`);
-    const data = await res.json();
+        allCoupons = data;
+        couponCurrentPage = 1;
+        renderCouponTable();
+    } catch (error) {
+        console.error("Failed to load coupon offers", error);
+    }
+}
 
-    const body = document.getElementById("couponTableBody");
-    body.innerHTML = "";
+function renderCouponTable() {
+    const couponTableBody = document.getElementById("couponTableBody");
+    couponTableBody.innerHTML = "";
 
-    data.forEach(item => {
-        body.innerHTML += `
+    if (allCoupons.length === 0) {
+        couponTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No coupon offers added</td></tr>`;
+        document.getElementById("couponPageInfo").textContent = "Page 0";
+        return;
+    }
+
+    const start = (couponCurrentPage - 1) * couponPageSize;
+    const end = start + couponPageSize;
+    const pageItems = allCoupons.slice(start, end);
+
+    pageItems.forEach(item => {
+        const safeCode = (item.couponCode || "").replace(/'/g, "\\'");
+        couponTableBody.innerHTML += `
             <tr>
-                <td>${item.id}</td>
-                <td>₹${item.discountPercentage} OFF</td>
-                <td>${item.couponCode}</td>
+                <td>${item.id ?? ""}</td>
+                <td>${item.discountPercentage ?? ""}</td>
+                <td>${item.couponCode ?? ""}</td>
                 <td>
-                    <button onclick="editCoupon(${item.id}, ${item.discountPercentage}, '${item.couponCode}')">Edit</button>
-                    <button onclick="deleteCoupon(${item.id})">Delete</button>
+                    <button type="button" onclick="editCoupon(${item.id}, ${item.discountPercentage}, '${safeCode}')">Edit</button>
+                    <button type="button" onclick="deleteCoupon(${item.id})">Delete</button>
                 </td>
             </tr>
         `;
     });
+
+    const totalPages = Math.ceil(allCoupons.length / couponPageSize);
+    document.getElementById("couponPageInfo").textContent = `Page ${couponCurrentPage} of ${totalPages}`;
+}
+
+function changeCouponPageSize() {
+    couponPageSize = parseInt(document.getElementById("couponPageSize").value);
+    couponCurrentPage = 1;
+    renderCouponTable();
+}
+
+function nextCouponPage() {
+    const totalPages = Math.ceil(allCoupons.length / couponPageSize);
+    if (couponCurrentPage < totalPages) {
+        couponCurrentPage++;
+        renderCouponTable();
+    }
+}
+
+function prevCouponPage() {
+    if (couponCurrentPage > 1) {
+        couponCurrentPage--;
+        renderCouponTable();
+    }
 }
 
 function editCoupon(id, discount, code) {
@@ -270,40 +369,117 @@ async function deleteCoupon(id) {
     loadCouponOffers();
 }
 
+async function uploadCouponCsv() {
+    const fileInput = document.getElementById("csvFileInput");
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select a CSV file.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/coupon-offers/upload-csv`, {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.text();
+
+        alert(result);
+        fileInput.value = "";
+        loadCouponOffers();
+    } catch (error) {
+        console.error("CSV upload failed:", error);
+        alert("Failed to upload CSV.");
+    }
+}
+
 // ================= FORM DATA =================
 
 async function loadForms() {
-
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
-    const status = document.getElementById("purchaseStatusFilter").value;
+    const purchaseStatus = document.getElementById("purchaseStatusFilter").value;
 
-    let params = new URLSearchParams();
+    const params = new URLSearchParams();
 
     if (fromDate) params.append("fromDate", fromDate);
     if (toDate) params.append("toDate", toDate);
-    if (status) params.append("purchaseStatus", status);
+    if (purchaseStatus) params.append("purchaseStatus", purchaseStatus);
 
-    const res = await fetch(`${API_BASE_URL}/api/admin/forms?${params}`);
-    const data = await res.json();
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/forms?${params.toString()}`);
+        const data = await response.json();
 
-    const body = document.getElementById("tableBody");
-    body.innerHTML = "";
+        allForms = data;
+        formCurrentPage = 1;
+        renderFormTable();
+    } catch (error) {
+        console.error("Failed to load forms", error);
+    }
+}
 
-    data.forEach(item => {
-        body.innerHTML += `
+function renderFormTable() {
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = "";
+
+    if (allForms.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;">No data found</td></tr>`;
+        document.getElementById("formPageInfo").textContent = "Page 0";
+        return;
+    }
+
+    const start = (formCurrentPage - 1) * formPageSize;
+    const end = start + formPageSize;
+    const pageItems = allForms.slice(start, end);
+
+    pageItems.forEach(item => {
+        tableBody.innerHTML += `
             <tr>
-                <td>${item.id}</td>
-                <td>${item.name}</td>
-                <td>${item.className}</td>
-                <td>${item.phoneNumber}</td>
-                <td>${item.purchaseStatus}</td>
-                <td>${item.discountPercentage || ""}</td>
-                <td>${item.couponCode || ""}</td>
-                <td>${new Date(item.createdAt).toLocaleString()}</td>
+                <td>${item.id ?? ""}</td>
+                <td>${item.name ?? ""}</td>
+                <td>${item.className ?? ""}</td>
+                <td>${item.phoneNumber ?? ""}</td>
+                <td>${item.purchaseStatus ?? ""}</td>
+                <td>${item.discountPercentage ?? ""}</td>
+                <td>${item.couponCode ?? ""}</td>
+                <td>${formatDate(item.createdAt)}</td>
             </tr>
         `;
     });
+
+    const totalPages = Math.ceil(allForms.length / formPageSize);
+    document.getElementById("formPageInfo").textContent = `Page ${formCurrentPage} of ${totalPages}`;
+}
+
+function changeFormPageSize() {
+    formPageSize = parseInt(document.getElementById("formPageSize").value);
+    formCurrentPage = 1;
+    renderFormTable();
+}
+
+function nextFormPage() {
+    const totalPages = Math.ceil(allForms.length / formPageSize);
+    if (formCurrentPage < totalPages) {
+        formCurrentPage++;
+        renderFormTable();
+    }
+}
+
+function prevFormPage() {
+    if (formCurrentPage > 1) {
+        formCurrentPage--;
+        renderFormTable();
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleString();
 }
 
 function exportCsv() {
